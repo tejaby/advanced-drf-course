@@ -1,0 +1,4 @@
+virtualenv/
+*.sqlite3
+**/migrations/
+__pycache__
