@@ -15,13 +15,14 @@ def user_api_view(request):
         user_serializer = UserSerializer(user, many=True)
 
         test_data = {
-            'username': 'yostinteja',
+            'username': 'yostintejaby_',
             'email': 'yostintejaby@gmail.com'
         }
 
         test_serializer = TestUserSerializer(data=test_data, context = test_data)
         if test_serializer.is_valid():
-            print('paso validaciones')
+            text_instance = test_serializer.save()
+            print(text_instance)
         else:
             print(test_serializer.errors)
 

@@ -15,7 +15,7 @@ class TestUserSerializer(serializers.Serializer):
 
     def validate_username(self, username):
         # custom validation
-        if 'yostintejaby' in username:
+        if 'yostintejaxun' in username:
             raise serializers.ValidationError('username is already being used')
         return username
 
@@ -34,3 +34,6 @@ class TestUserSerializer(serializers.Serializer):
         # if data['username'] in data['email']:
         #     raise serializers.ValidationError('email could not contain name')
         return data
+    
+    def create(self, validated_data):
+        return User.objects.create(**validated_data)
