@@ -4,15 +4,15 @@ from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CON
 
 from django.contrib.auth.models import User
 
-from .serializers import UserSerializer
-from .serializers import TestUserSerializer
+from .serializers import UserSerializer, UserListSerializer
+# from .serializers import TestUserSerializer
 
 
 @api_view(['GET', 'POST'])
 def user_api_view(request):
     if request.method == 'GET':
-        user = User.objects.filter(is_active=True).values('username', 'email')
-        user_serializer = UserSerializer(user, many=True)
+        user = User.objects.filter(is_active=True).values('id', 'username', 'password', 'email')
+        user_serializer = UserListSerializer(user, many=True)
 
         return Response(user_serializer.data, status=HTTP_200_OK)
 
@@ -37,7 +37,7 @@ def user_detail_api_view(request, user_id):
         return Response(user_serializer.data, status=HTTP_200_OK)
 
     elif request.method == 'PUT':
-        user_serializer = TestUserSerializer(user, data=request.data)
+        user_serializer = UserSerializer(user, data=request.data)
         if user_serializer.is_valid():
             user_serializer.save()
             return Response(user_serializer.data, status=HTTP_200_OK)
