@@ -8,6 +8,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+    def to_representation(self, instance):
+
+        return {"username": instance['username'],
+                'email': instance['email'], }
+
 
 class TestUserSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -34,10 +39,10 @@ class TestUserSerializer(serializers.Serializer):
         # if data['username'] in data['email']:
         #     raise serializers.ValidationError('email could not contain name')
         return data
-    
+
     def create(self, validated_data):
         return User.objects.create(**validated_data)
-    
+
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
