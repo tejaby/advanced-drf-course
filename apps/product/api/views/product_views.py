@@ -1,3 +1,7 @@
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+
 from apps.base.api import GeneralListAPIView
 
 from apps.product.api.serializers.product_serializers import ProductSerializer
@@ -5,3 +9,14 @@ from apps.product.api.serializers.product_serializers import ProductSerializer
 
 class ProductListAPIView(GeneralListAPIView):
     serializer_class = ProductSerializer
+
+
+class ProductCreateAPIView(generics.CreateAPIView):
+    serializer_class = ProductSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'product created successfully'}, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
