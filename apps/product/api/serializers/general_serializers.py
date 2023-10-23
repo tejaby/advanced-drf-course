@@ -6,6 +6,6 @@ from apps.product.models import Category
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        exclude = ['state']
+        exclude = ['state', 'created_at', 'deleted_at']
 
 
