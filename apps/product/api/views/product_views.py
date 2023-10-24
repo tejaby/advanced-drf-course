@@ -1,4 +1,4 @@
-from rest_framework.generics import CreateAPIView, RetrieveAPIView, DestroyAPIView, UpdateAPIView, ListCreateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveAPIView, DestroyAPIView, UpdateAPIView, ListCreateAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
@@ -84,4 +84,19 @@ class ProductListCreateAPIView(ListCreateAPIView):
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'producto creado exitosamente', 'producto': serializer.data}, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class ProductRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def put(self, request, pk, *args, **kwargs):
+        # instance = self.get_object()
+        instance = self.get_queryset().filter(id=pk).first()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=True) # permite actualizaciones parciales
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_200_OK)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
