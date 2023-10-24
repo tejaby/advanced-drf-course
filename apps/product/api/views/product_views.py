@@ -1,4 +1,4 @@
-from rest_framework.generics import CreateAPIView, RetrieveAPIView, DestroyAPIView, UpdateAPIView, ListCreateAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveAPIView, DestroyAPIView, UpdateAPIView, ListCreateAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
@@ -95,8 +95,35 @@ class ProductRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         # instance = self.get_object()
         instance = self.get_queryset().filter(id=pk).first()
         serializer = self.get_serializer(
-            instance, data=request.data, partial=True) # permite actualizaciones parciales
+            instance, data=request.data, partial=True)  # permite actualizaciones parciales
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_200_OK)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class ProductRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = ProductSerializer
+
+    def get_queryset(self, pk=None):
+        if pk is None:
+            return self.get_serializer().Meta.model.objects.filter(state=True)
+        else:
+            return self.get_serializer().Meta.model.objects.filter(state=True, id=pk).first()
+
+    def update(self, request, pk=None, *args, **kwargs):
+        if self.get_queryset(pk):
+            serializer = self.get_serializer(
+                self.get_queryset(pk), data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=HTTP_200_OK)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk=None, *args, **kwargs):
+        instance = self.get_queryset().filter(id=pk).first()
+        if instance:
+            instance.state = False
+            instance.save()
+            return Response({'message': 'Product deleted successfully'}, status=HTTP_200_OK)
+        return Response({'message': 'Product not found'})
