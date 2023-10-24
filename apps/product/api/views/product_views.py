@@ -54,20 +54,18 @@ class ProductUpdateAPIView(UpdateAPIView):
     serializer_class = ProductSerializer
     # queryset = Product.objects.all()
 
-    def get_queryset(self, pk):
-        return self.get_serializer().Meta.model.objects.filter(state=True).filter(id=pk).first()
+    def get_queryset(self):
+        return self.get_serializer().Meta.model.objects.filter(state=True)
 
-    def patch(self, request, pk=None):
-        if self.get_queryset(pk):
-            serializer = self.get_serializer(self.get_queryset(pk))
+    def retrieve(self, request, pk=None):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
             return Response(serializer.data, status=HTTP_200_OK)
-        return Response({'message': 'Product not found'})
-
-    def put(self, request, pk=None):
-        if self.get_queryset(pk):
-            serializer = self.get_serializer(
-                self.get_queryset(pk), data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=HTTP_200_OK)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
