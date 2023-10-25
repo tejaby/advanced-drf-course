@@ -6,8 +6,9 @@ from django.shortcuts import get_object_or_404
 
 from apps.base.api import GeneralListAPIView
 
-from apps.product.models import Product
+from apps.product.models import Product, Category
 from apps.product.api.serializers.product_serializers import ProductSerializer
+from apps.product.api.serializers.general_serializers import CategorySerializer
 
 
 """
@@ -183,9 +184,8 @@ class ProductRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 
 """
-Vista basada en clase ViewSet para el listado y creacion de productos
-- Se sobrescribe el metodo get para procesar la solicitud de listado de productos
-- Se sobrescribe el metodo post para procesar la solicitud de creación de productos
+Vista basada en clase ViewSet para el listado, obtencion, crecion, actualizacion y eliminacion de producto
+- Se crean los metodos listar, retrieve, create, update y delete para mayor flexibilidad y control
 
 """
 
@@ -224,3 +224,22 @@ class ProductViewset(viewsets.ViewSet):
         product = get_object_or_404(Product, pk=pk)
         product.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+
+"""
+Vista basada en clase ModelViewSet para el listado, obtencion, crecion, actualizacion y eliminacion de producto
+- A diferencia de usar solamente ViewSet, ModelViewSet ya estan definidos los metodos, y estos se pueden sobrescribir
+
+"""
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    serializer_class = CategorySerializer
+
+    def get_queryset(self):
+        return Category.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
