@@ -1,12 +1,14 @@
 from rest_framework.generics import CreateAPIView, RetrieveAPIView, DestroyAPIView, UpdateAPIView, ListCreateAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from django.shortcuts import get_object_or_404
 
 from apps.base.api import GeneralListAPIView
 
+from apps.product.models import Product
 from apps.product.api.serializers.product_serializers import ProductSerializer
 
-from apps.product.models import Product
 
 """
 Vista basada en clase ListAPIView para el listado de productos
@@ -178,3 +180,47 @@ class ProductRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
             instance.save()
             return Response({'message': 'Product deleted successfully'}, status=HTTP_200_OK)
         return Response({'message': 'Product not found'}, status=HTTP_404_NOT_FOUND)
+
+
+"""
+Vista basada en clase ViewSet para el listado y creacion de productos
+- Se sobrescribe el metodo get para procesar la solicitud de listado de productos
+- Se sobrescribe el metodo post para procesar la solicitud de creación de productos
+
+"""
+
+
+class ProductViewset(viewsets.ViewSet):
+
+    def list(self, request, *args, **kwargs):
+        queryset = Product.objects.filter(state=True)
+        serializer = ProductSerializer(queryset, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    def retrieve(self, request, pk=None):
+        queryset = Product.objects.filter(state=True)
+        product = get_object_or_404(queryset, id=pk)
+        serializer = ProductSerializer(product)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        product = request.data
+        serializer = ProductSerializer(data=product)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None):
+        queryset = Product.objects.filter(state=True)
+        product = get_object_or_404(queryset, id=pk)
+        serializer = ProductSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk=None, *args, **kwargs):
+        product = get_object_or_404(Product, pk=pk)
+        product.delete()
+        return Response(status=HTTP_204_NO_CONTENT)

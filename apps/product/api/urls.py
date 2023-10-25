@@ -5,6 +5,8 @@ from apps.product.api.views.product_views import ProductListAPIView, ProductCrea
 # from apps.product.api.views.product_views import ProductRetrieveUpdateAPIView
 from apps.product.api.views.product_views import ProductListCreateAPIView,  ProductRetrieveUpdateDestroyAPIView
 
+from apps.product.api.routers import router
+
 
 urlpatterns = [
     path('category/list/', CategoryListAPIView.as_view(), name='category_list'),
@@ -17,7 +19,9 @@ urlpatterns = [
     path('product/update/<int:pk>/',
          ProductUpdateAPIView.as_view(), name='product_update'),
     path('product/', ProductListCreateAPIView.as_view(), name='product'),
-#     path('producto/<int:pk>/', ProductRetrieveUpdateAPIView.as_view(), name='product'),
+    #     path('producto/<int:pk>/', ProductRetrieveUpdateAPIView.as_view(), name='product'),
     path('product/<int:pk>/',
          ProductRetrieveUpdateDestroyAPIView.as_view(), name='detail_product')
 ]
+
+urlpatterns += router.urls
