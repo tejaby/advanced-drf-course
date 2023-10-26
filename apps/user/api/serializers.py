@@ -3,6 +3,12 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 
 
+"""
+Serializer general para las operaciones de creación y actualización de usuarios
+
+"""
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -13,12 +19,21 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-    
+
     def update(self, instance, validated_data):
         update_user = super().update(instance, validated_data)
         update_user.set_password(validated_data['password'])
         update_user.save()
         return update_user
+
+
+"""
+Serializer para listar usuarios.
+- Con values(): QuerySet seria de diccionarios. se accederia intance['username']
+- Sin values(): la QuerySet seria de objetos (instancias de modelos). se accederia intance.username
+
+
+"""
 
 
 class UserListSerializer(serializers.ModelSerializer):
@@ -31,6 +46,47 @@ class UserListSerializer(serializers.ModelSerializer):
                 'username': instance['username'],
                 'password': instance['password'],
                 'email': instance['email'], }
+
+
+"""
+Serializer para listar los datos del usuario autenticado
+
+"""
+
+
+class UserTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email')
+
+
+"""
+Serializer para validar el inicio de sesión utilizando email en lugar de username.
+- Se podria hacer con authenticate en lugar de hacer la consulta a User pero hay que modificar el metodo 
+
+
+"""
+
+
+class UserLoginSerializer(serializers.Serializer):
+    email = serializers.CharField()
+    password = serializers.CharField()
+
+    def validate(self, attrs):
+        email = attrs['email']
+        password = attrs['password']
+
+        if email and password:
+            user = User.objects.filter(email=email).first()
+            if user and user.check_password(password):
+                attrs['user'] = user  # user autenticado se almacena en attrs
+            else:
+                raise serializers.ValidationError(
+                    'email or password are incorrect')
+        else:
+            raise serializers.ValidationError(
+                'must include email and password')
+        return attrs
 
 
 # class TestUserSerializer(serializers.Serializer):

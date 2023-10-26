@@ -40,7 +40,8 @@ DJANGO_APPS = [
 ]
 
 THIRD_APPS = [
-    'rest_framework'
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 LOCAL_APPS = [
