@@ -7,10 +7,11 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from rest_framework.authtoken.models import Token
-from apps.user.api.serializers import UserLoginSerializer
 from apps.user.api.serializers import UserTokenSerializer
 
 from rest_framework.authentication import TokenAuthentication
+
+from apps.user.authentication import ExpiringTokenAuthentication
 
 """
 Vista basada en clase ObtainAuthToken para la autenticacion de usuarios y creacion de tokens
@@ -51,12 +52,10 @@ Vista basada en clase APIView para la autenticacion de usuarios y eliminacion de
 
 
 class CustomLogoutView(APIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [ExpiringTokenAuthentication]
 
     def post(self, request, *args, **kwargs):
         token = request.auth
-        user = request.user
-        print(user)
         if token:
             token.delete()
             return Response({'message': 'Token deleted successfully'}, status=status.HTTP_200_OK)

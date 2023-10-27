@@ -1,13 +1,16 @@
+# advanced django rest framework course
+
 ## Requisitos
 
 - Python 3.12.0
-- virtualenv (para gestionar las dependencias)
+- Django 4.2.6
+- Entorno virtual (para gestionar las dependencias)
 
-1. Crea un entorno virtual con virtualenv o venv
+## Instalación
 
-2. Activa el entorno virtual
+Crea un entorno virtual con virtualenv o venv
 
-- En Windows (cmd):
+Activa el entorno virtual
 
 - En Windows (cmd):
 
@@ -27,11 +30,19 @@
   source venv/bin/activate
   ```
 
-3. Instala las dependencias del proyecto
+Instala las dependencias del proyecto
 
+```
 pip install -r requirements.txt
+```
 
-4. Ejecuta las migraciones
+Ejecuta las migraciones
 
 python manage.py makemigrations
 python manage.py migrate
+
+¡Eso es todo, hemos terminado!
+
+```
+./manage.py runserver
+```
