@@ -16,7 +16,7 @@ from apps.user.authentication import ExpiringTokenAuthentication
 """
 Vista basada en clase ObtainAuthToken para la autenticacion de usuarios y creacion de tokens
 - se puede utlizar tanto el serializer que ObtainAuthToken tiene definido o usar UserLoginSerializer
-= Se le envia la request en el contexto ya que el serializador AuthTokenSerializer utiliza authenticate
+- Se envía la solicitud en el contexto ya que el serializador AuthTokenSerializer utiliza autenticación.
 
 """
 
@@ -44,7 +44,8 @@ class CustomLoginView(ObtainAuthToken):
 
 """
 Vista basada en clase APIView para la autenticacion de usuarios y eliminacion de tokens
-- al agregar authentication_classes se podra enviar token en los headers y validarlos con:
+- Permite la autenticación mediante el envío de tokens en los encabezados de la solicitud.
+- Utiliza ExpiringTokenAuthentication para validar tokens y renovarlos si han caducado.
 -request.user para representar al usuario autenticado. Además, establecerá 
 -request.auth para contener información relacionada con la autenticación, como el token  
 
@@ -60,4 +61,23 @@ class CustomLogoutView(APIView):
             token.delete()
             return Response({'message': 'Token deleted successfully'}, status=status.HTTP_200_OK)
         else:
-            return Response({'message': 'no token found'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'no token found'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+"""
+Vista basada en clase APIView para verificar la validez de un token de usuario.
+- Utiliza ExpiringTokenAuthentication para validar tokens.
+- Responde si el token es válido y proporciona el token en caso afirmativo.
+
+"""
+
+
+class CustomTokenRefreshView(APIView):
+    authentication_classes = [ExpiringTokenAuthentication]
+
+    def get(self, request, *args, **kwargs):
+        token = request.auth
+        if token:
+            return Response({'message': 'token is valid', 'token': token.key}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'no token found'}, status=status.HTTP_401_UNAUTHORIZED)

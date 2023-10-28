@@ -12,19 +12,21 @@ Autenticación personalizada que hereda de la clase TokenAuthentication
 
 
 class ExpiringTokenAuthentication(TokenAuthentication):
+
+    def has_token_expires(self, token):
+        token_expired = timezone.now() - token.created - timezone.timedelta(seconds=10)
+        # Verificar si el token ha caducado
+        if token_expired:
+            print('El token ha caduc')
+            token.delete()
+            token = Token.objects.create(user=token.user)
+            return token
+
     def authenticate_credentials(self, key):
-
         try:
-            token = self.get_model().objects.get(key=key)
-            print(timezone.now())
-        except self.get_model().DoesNotExist:
-            raise exceptions.AuthenticationFailed('Token no válido')
+            token = Token.objects.get(key=key)
+            token = self.has_token_expires(token)
+        except Token.DoesNotExist:
+            raise exceptions.AuthenticationFailed('Invalid token')
 
-        if not token.user.is_active:
-            raise exceptions.AuthenticationFailed(
-                'Usuario inactivo o eliminado')
-
-        if timezone.now() - token.created > timezone.timedelta(seconds=200):
-            raise exceptions.AuthenticationFailed('Token caducado')
-
-        return super().authenticate_credentials(key)
+        return token.user, token
