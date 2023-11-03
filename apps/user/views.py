@@ -6,10 +6,12 @@ from rest_framework.response import Response
 
 from rest_framework import status
 
+from rest_framework import permissions
+
 from rest_framework.authtoken.models import Token
 from apps.user.api.serializers import UserTokenSerializer
 
-from rest_framework.authentication import TokenAuthentication
+
 
 from apps.user.authentication import ExpiringTokenAuthentication
 
@@ -54,6 +56,7 @@ Vista basada en clase APIView para la autenticacion de usuarios y eliminacion de
 
 class CustomLogoutView(APIView):
     authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         token = request.auth
@@ -74,6 +77,7 @@ Vista basada en clase APIView para verificar la validez de un token de usuario.
 
 class CustomTokenRefreshView(APIView):
     authentication_classes = [ExpiringTokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         token = request.auth

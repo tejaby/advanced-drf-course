@@ -3,6 +3,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from django.shortcuts import get_object_or_404
+from rest_framework import permissions
 
 from apps.base.api import GeneralListAPIView
 
@@ -158,6 +159,8 @@ Vista basada en clase RetrieveUpdateDestroyAPIView para la obtención, actualiza
 
 class ProductRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ProductSerializer
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self, pk=None):
         if pk is None:
@@ -175,12 +178,11 @@ class ProductRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk=None, *args, **kwargs):
-        instance = self.get_queryset().filter(id=pk).first()
-        if instance:
-            instance.state = False
-            instance.save()
-            return Response({'message': 'Product deleted successfully'}, status=HTTP_200_OK)
-        return Response({'message': 'Product not found'}, status=HTTP_404_NOT_FOUND)
+        queryset = self.get_queryset()
+        instance = get_object_or_404(queryset, id=pk)
+        instance.state = False
+        instance.save()
+        return Response({'message': 'Product deleted successfully'}, status=HTTP_200_OK)
 
 
 """
@@ -191,55 +193,92 @@ Vista basada en clase ViewSet para el listado, obtencion, crecion, actualizacion
 
 
 class ProductViewset(viewsets.ViewSet):
+    queryset = Product.objects.filter(state=True)
+    serializer_class = ProductSerializer
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
 
     def list(self, request, *args, **kwargs):
-        queryset = Product.objects.filter(state=True)
-        serializer = ProductSerializer(queryset, many=True)
+        queryset = self.queryset
+        serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
-    def retrieve(self, request, pk=None):
-        queryset = Product.objects.filter(state=True)
-        product = get_object_or_404(queryset, id=pk)
-        serializer = ProductSerializer(product)
-        return Response(serializer.data)
-
     def create(self, request, *args, **kwargs):
-        product = request.data
-        serializer = ProductSerializer(data=product)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        queryset = self.queryset
+        instance = get_object_or_404(queryset, id=pk)
+        serializer = self.serializer_class(instance)
+        return Response(serializer.data, status=HTTP_200_OK)
 
     def update(self, request, pk=None):
-        queryset = Product.objects.filter(state=True)
-        product = get_object_or_404(queryset, id=pk)
-        serializer = ProductSerializer(product, data=request.data)
+        queryset = self.queryset
+        instance = get_object_or_404(queryset, id=pk)
+        serializer = self.serializer_class(instance, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk=None, *args, **kwargs):
-        product = get_object_or_404(Product, pk=pk)
-        product.delete()
-        return Response(status=HTTP_204_NO_CONTENT)
+    def destroy(self, request, pk=None, *args, **kwargs):
+        queryset = self.queryset
+        instance = queryset.filter(id=pk).first()
+        if instance is not None:
+            instance.state = False
+            instance.save()
+            return Response({'message': "product deleted successfully"}, status=HTTP_200_OK)
+        return Response({'error': 'Product not found'}, status=HTTP_404_NOT_FOUND)
 
 
 """
 Vista basada en clase ModelViewSet para el listado, obtencion, crecion, actualizacion y eliminacion de producto
 - A diferencia de usar solamente ViewSet, ModelViewSet ya estan definidos los metodos, y estos se pueden sobrescribir
+- Puedes personalizar los permisos en las vistas, incluso después de haber sido configurados globalmente en settings
 
 """
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        return Category.objects.all()
+        return Category.objects.filter(state=True)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None, *args, **kwargs):
+        instance = self.get_object()
+        instance.state = False
+        instance.save()
+        return Response(status=HTTP_204_NO_CONTENT)

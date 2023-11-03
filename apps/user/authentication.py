@@ -14,13 +14,16 @@ Autenticación personalizada que hereda de la clase TokenAuthentication
 class ExpiringTokenAuthentication(TokenAuthentication):
 
     def has_token_expires(self, token):
-        token_expired = timezone.now() - token.created - timezone.timedelta(seconds=10)
+        time_dierence = timezone.now() - token.created
+
         # Verificar si el token ha caducado
-        if token_expired:
-            print('El token ha caduc')
+        if time_dierence > timezone.timedelta(days=1):
             token.delete()
             token = Token.objects.create(user=token.user)
             return token
+        else:
+            return token
+            
 
     def authenticate_credentials(self, key):
         try:
