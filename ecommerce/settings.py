@@ -42,6 +42,7 @@ DJANGO_APPS = [
 THIRD_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
     "corsheaders",
 ]
 
@@ -68,7 +69,8 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # 'rest_framework.authentication.TokenAuthentication',
-        'apps.user.authentication.ExpiringTokenAuthentication'
+        # 'apps.user.authentication.ExpiringTokenAuthentication'
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',

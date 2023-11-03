@@ -195,8 +195,8 @@ Vista basada en clase ViewSet para el listado, obtencion, crecion, actualizacion
 class ProductViewset(viewsets.ViewSet):
     queryset = Product.objects.filter(state=True)
     serializer_class = ProductSerializer
-    authentication_classes = []
-    permission_classes = [permissions.AllowAny]
+    # authentication_classes = []
+    # permission_classes = [permissions.AllowAny]
 
 
     def list(self, request, *args, **kwargs):
@@ -246,8 +246,8 @@ Vista basada en clase ModelViewSet para el listado, obtencion, crecion, actualiz
 
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
-    authentication_classes = []
-    permission_classes = [permissions.AllowAny]
+    # authentication_classes = []
+    # permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         return Category.objects.filter(state=True)
