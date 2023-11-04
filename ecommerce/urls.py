@@ -17,14 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-# custom login, logout, refresh authtoken
+# custom views login, logout, refresh authtoken
 from apps.user.views import CustomLoginView, CustomLogoutView, CustomTokenRefreshView, CustomTokenObtainPairView, CustomLogoutPairView
 
-# custom login, logout simplejwt
+# custom views login, logout simplejwt
 from apps.user.views import CustomTokenObtainPairView, CustomLogoutPairView
 
 
-# vistas que simplejwt provee
+# views that rest_framework_simplejwt provides
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -32,13 +32,18 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # authtoken
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
     path('refresh/', CustomTokenRefreshView.as_view(), name='refresh'),
+    # simplejwt default views
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # simplejwt
     path('api/login/', CustomTokenObtainPairView.as_view(), name='custom_token_obtain_pair'),
     path('api/logout/', CustomLogoutPairView.as_view(), name='custom_logout_pair'),
+    # user app views
     path('user/', include('apps.user.api.urls')),
+    # product app views
     path('product/', include('apps.product.api.urls'))
 ]

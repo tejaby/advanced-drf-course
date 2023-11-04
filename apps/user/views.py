@@ -102,6 +102,10 @@ Vista basada en clase TokenObtainPairView para la autenticacion de usuarios y cr
 class CustomTokenObtainPairView(TokenObtainPairView):
 
     def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        if not username or not password:
+            return Response({'error': "username and password are required"}, status=status.HTTP_400_BAD_REQUEST)
         user = authenticate(
             username=request.data['username'], password=request.data['password'])
         if user is not None:
@@ -109,8 +113,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             if serializer.is_valid():
                 user_serializer = UserTokenSerializer(user)
                 return Response({'access': serializer.validated_data['access'], 'refresh': serializer.validated_data['refresh'], 'user': user_serializer.data}, status=status.HTTP_200_OK)
+            return Response({'error': 'Invalid data for token generation'}, status=status.HTTP_400_BAD_REQUEST)
         return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 """
 Vista basada en clase APIView para la validación del usuario y revocación del token de refresco.
 - Se debe de enviar el token de acceso en los headers Authorization Bearer token_access

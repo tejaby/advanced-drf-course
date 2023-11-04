@@ -1,6 +1,8 @@
 from rest_framework.decorators import api_view
+from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
+from django.shortcuts import get_object_or_404
 
 from django.contrib.auth.models import User
 
@@ -52,3 +54,25 @@ def user_detail_api_view(request, user_id):
     elif request.method == 'DELETE':
         user.delete()
         return Response({'message': 'usuario eliminado exitosamente'}, status=HTTP_200_OK)
+
+
+class UserViewSet(viewsets.GenericViewSet):
+    serializer_class = UserSerializer
+    list_serializer_class = UserListSerializer
+
+    def get_queryset(self):
+        if self.queryset is None:
+            return self.serializer_class().Meta.model.objects.filter(is_active=True).values('id', 'username', 'password', 'email')
+        return self.queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.list_serializer_class(queryset, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
