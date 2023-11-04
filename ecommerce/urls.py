@@ -17,8 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+# custom login, logout, refresh authtoken
 from apps.user.views import CustomLoginView, CustomLogoutView, CustomTokenRefreshView, CustomTokenObtainPairView, CustomLogoutPairView
 
+# custom login, logout simplejwt
+from apps.user.views import CustomTokenObtainPairView, CustomLogoutPairView
+
+
+# vistas que simplejwt provee
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,

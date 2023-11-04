@@ -91,6 +91,14 @@ class CustomTokenRefreshView(APIView):
             return Response({'message': 'no token found'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+"""
+Vista basada en clase TokenObtainPairView para la autenticacion de usuarios y creacion de tokens con simplejwt
+- Utiliza el serializador que proporciona la clase TokenObtainPairView para autenticar al usuario y generar tokens.
+- Si el usuario es válido, se retorna el token de acceso y el token de refresco, junto con la información del usuario.
+
+"""
+
+
 class CustomTokenObtainPairView(TokenObtainPairView):
 
     def post(self, request, *args, **kwargs):
@@ -102,6 +110,14 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 user_serializer = UserTokenSerializer(user)
                 return Response({'access': serializer.validated_data['access'], 'refresh': serializer.validated_data['refresh'], 'user': user_serializer.data}, status=status.HTTP_200_OK)
         return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
+    
+"""
+Vista basada en clase APIView para la validación del usuario y revocación del token de refresco.
+- Se debe de enviar el token de acceso en los headers Authorization Bearer token_access
+- El método RefreshToken recibe el token de refresco y devuelve la instancia si es válido.
+- El método blacklist() en el objeto RefreshToken se utiliza para invalidar el token de refresco.
+
+"""
 
 
 class CustomLogoutPairView(APIView):
