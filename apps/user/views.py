@@ -8,9 +8,12 @@ from rest_framework import status
 
 from rest_framework import permissions
 
+from django.contrib.auth import authenticate
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 from rest_framework.authtoken.models import Token
 from apps.user.api.serializers import UserTokenSerializer
-
 
 
 from apps.user.authentication import ExpiringTokenAuthentication
@@ -85,3 +88,16 @@ class CustomTokenRefreshView(APIView):
             return Response({'message': 'token is valid', 'token': token.key}, status=status.HTTP_200_OK)
         else:
             return Response({'message': 'no token found'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+
+    def post(self, request, *args, **kwargs):
+        user = authenticate(
+            username=request.data['username'], password=request.data['password'])
+        if user is not None:
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                user_serializer = UserTokenSerializer(user)
+                return Response({'token': serializer.validated_data['access'], 'refresh': serializer.validated_data['refresh'], 'user': user_serializer.data}, status=status.HTTP_200_OK)
+        return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
