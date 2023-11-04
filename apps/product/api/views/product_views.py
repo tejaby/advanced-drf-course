@@ -220,7 +220,7 @@ class ProductViewset(viewsets.ViewSet):
     def update(self, request, pk=None):
         queryset = self.queryset
         instance = get_object_or_404(queryset, id=pk)
-        serializer = self.serializer_class(instance, data=request.data)
+        serializer = self.serializer_class(instance, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)

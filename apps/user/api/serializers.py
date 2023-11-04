@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 
 """
-Serializer general para las operaciones de creación y actualización de usuarios
+Serializer general para la obtencion y creacion de usuarios
 
 """
 
@@ -20,11 +20,24 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-    def update(self, instance, validated_data):
-        update_user = super().update(instance, validated_data)
-        update_user.set_password(validated_data['password'])
-        update_user.save()
-        return update_user
+
+"""
+Serializer para la actualización de usuarios
+= No hace falta el metodo update para encriptar el password en este serializador
+
+"""
+
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name')
+
+    # def update(self, instance, validated_data):
+    #     update_user = super().update(instance, validated_data)
+    #     update_user.set_password(validated_data['password'])
+    #     update_user.save()
+    #     return update_user
 
 
 """
@@ -44,12 +57,13 @@ class UserListSerializer(serializers.ModelSerializer):
 
         return {'id': instance['id'],
                 'username': instance['username'],
-                'password': instance['password'],
-                'email': instance['email'], }
+                'email': instance['email'],
+                'first_name': instance['first_name'],
+                'last_name': instance['last_name']}
 
 
 """
-Serializer para listar los datos del usuario autenticado
+Serializer para obtencion de los datos del usuario autenticado
 
 """
 
@@ -57,7 +71,7 @@ Serializer para listar los datos del usuario autenticado
 class UserTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email')
+        fields = ('username', 'email', 'first_name', 'last_name')
 
 
 """
