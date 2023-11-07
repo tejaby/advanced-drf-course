@@ -41,6 +41,26 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
 
 """
+Serializer para la validacion de contraseña
+= Se valida la data enviada y se retorna si todo es ok
+
+"""
+
+
+class UserPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(
+        min_length=4, max_length=128, write_only=True)
+    password2 = serializers.CharField(
+        min_length=4, max_length=128, write_only=True)
+
+    def validate(self, data):
+        if data['password'] != data['password2']:
+            raise serializers.ValidationError(
+                {'password': 'Las contraseñas no coinciden'})
+        return data
+
+
+"""
 Serializer para listar usuarios.
 - Con values(): QuerySet seria de diccionarios. se accederia intance['username']
 - Sin values(): la QuerySet seria de objetos (instancias de modelos). se accederia intance.username

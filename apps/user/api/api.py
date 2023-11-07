@@ -1,12 +1,13 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
+from rest_framework import permissions
 from django.shortcuts import get_object_or_404
 
 from django.contrib.auth.models import User
 
-from .serializers import UserSerializer, UserListSerializer, UpdateUserSerializer
+from .serializers import UserSerializer, UserListSerializer, UpdateUserSerializer, UserPasswordSerializer
 # from .serializers import TestUserSerializer
 
 
@@ -56,10 +57,23 @@ def user_detail_api_view(request, user_id):
         return Response({'message': 'usuario eliminado exitosamente'}, status=HTTP_200_OK)
 
 
+"""
+Vista basada en clase GenericViewSet para el listado, obtencion, crecion, actualizacion y eliminacion de producto
+- Se definen los metodos listar, retrieve, create, update, delete y funciones extras para el usuario
+- Se utiliza el decorador action para convertir funciones en vistas validas para tener una ruta en el viewset
+- la propiedad detail en el decorador hace que la ruta sea tipo manipulación de una instancia específica de un objeto
+- Si detail es False se refiere a una operación que afecta a una colección de objetos o no requiere un objeto específico
+- url_path se utiliza si se decea personalizar la parte de la URL que corresponde a una acción personalizada
+
+"""
+
+
 class UserViewSet(viewsets.GenericViewSet):
     model = User
     serializer_class = UserSerializer
     list_serializer_class = UserListSerializer
+    # authentication_classes = []
+    # permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         if self.queryset is None:
@@ -86,10 +100,11 @@ class UserViewSet(viewsets.GenericViewSet):
         instance = self.get_object(pk)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-    
+
     def update(self, request, pk=None, *args, **kwargs):
         instance = self.get_object(pk)
-        serializer = UpdateUserSerializer(instance, data=request.data, partial=True)
+        serializer = UpdateUserSerializer(
+            instance, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_200_OK)
@@ -102,3 +117,15 @@ class UserViewSet(viewsets.GenericViewSet):
             instance.save()
             return Response(status=HTTP_204_NO_CONTENT)
         return Response({'error': 'user not found'}, status=HTTP_404_NOT_FOUND)
+
+    @action(methods=['POST'], detail=True)
+    def set_password(self, request, pk=None):
+        instance = self.get_object(pk)
+        # se utiliza el serializador para validar que ambas passwords sean validas
+        serializer = UserPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            # se actualiza y se encripta el password de la instancia del usuario
+            instance.set_password(serializer.validated_data['password'])
+            instance.save()
+            return Response({'message': 'successfully updated password'}, status=HTTP_200_OK)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
