@@ -19,6 +19,16 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         exclude = ['state', 'created_at', 'deleted_at']
 
+    def validate_stock(self, stock):
+        if stock != None:
+            return stock
+        raise serializers.ValidationError('stock is required')
+
+    def validate(self, data):
+        if 'stock' not in data.keys():
+            raise serializers.ValidationError({'stock': 'stock is required'})
+        return data
+
     def to_representation(self, instance):
         data = {
             'id': instance.id,

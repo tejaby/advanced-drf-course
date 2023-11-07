@@ -25,6 +25,7 @@ class Product(BaseModel):
     price = models.DecimalField(
         max_digits=10, decimal_places=2, blank=False, name=False)
     image = models.ImageField(upload_to='product/', blank=True, null=True)
+    stock = models.BooleanField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     class Meta:
