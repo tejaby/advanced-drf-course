@@ -10,6 +10,12 @@ from django.contrib.auth.models import User
 from .serializers import UserSerializer, UserListSerializer, UpdateUserSerializer, UserPasswordSerializer
 # from .serializers import TestUserSerializer
 
+"""
+Vista basada en funciones para el listado, obtencion, crecion, actualizacion y eliminacion de producto
+- Se definen los metodos permitidos con el decorador api_view para cada vista
+
+
+"""
 
 @api_view(['GET', 'POST'])
 def user_api_view(request):

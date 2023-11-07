@@ -26,13 +26,13 @@ class ProductSerializer(serializers.ModelSerializer):
             'descripcion': instance.description,
             'categoria': instance.category.category,
             'precio': instance.price,
-            # 'imagen': instance.image
+            'imagen': instance.image.url if instance.image else None,
 
         }
 
-        if instance.image:
-            data['imagen'] = instance.image.url
-        else:
-            data['imagen'] = None
+        # if instance.image:
+        #     data['imagen'] = instance.image.url
+        # else:
+        #     data['imagen'] = None
 
         return data

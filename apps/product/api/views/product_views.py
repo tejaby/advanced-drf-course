@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions
+from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 
 from apps.base.api import GeneralListAPIView
 
@@ -188,6 +189,7 @@ class ProductRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 """
 Vista basada en clase ViewSet para el listado, obtencion, crecion, actualizacion y eliminacion de producto
 - Se crean los metodos listar, retrieve, create, update y delete para mayor flexibilidad y control
+- Se agrega explisitamente los tipos de datos que esta vista acepta con la propiedad parser_classes
 
 """
 
@@ -197,7 +199,7 @@ class ProductViewset(viewsets.ViewSet):
     serializer_class = ProductSerializer
     # authentication_classes = []
     # permission_classes = [permissions.AllowAny]
-
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
 
     def list(self, request, *args, **kwargs):
         queryset = self.queryset
@@ -220,7 +222,8 @@ class ProductViewset(viewsets.ViewSet):
     def update(self, request, pk=None):
         queryset = self.queryset
         instance = get_object_or_404(queryset, id=pk)
-        serializer = self.serializer_class(instance, data=request.data, partial=True)
+        serializer = self.serializer_class(
+            instance, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
